@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Import Recovery Phrase</title>
+  <style>
+  /* Core UI Colors & Theme variables */
+  :root {
+    --background: #ffffff;
+    --foreground: #111827;
+    --muted: #f3f4f6;
+    --muted-foreground: #6b7280;
+    --border: #e5e7eb;
+    --radius-full: 9999px;
+  }
+
+  * { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+  }
+  
+  html, body { 
+    height: 100%; 
+  }
+  
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+    background: #ffffff; 
+    color: #111827; 
+  }
+  
+  .page-container { 
+    min-height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+  }
+  
+  /* Header */
+  .header { 
+    border-bottom: 1px solid #e5e7eb; 
+    background: #ffffff; 
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+  }
+  
+  .header-content { 
+    max-width: 680px; 
+    margin: 0 auto; 
+    width: 100%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 12px 20px; 
+  }
+  
+  .back-btn { 
+    width: 40px; 
+    height: 40px; 
+    border: none; 
+    background: transparent; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    color: #1f2937; 
+    border-radius: 50%; 
+    transition: background 0.2s; 
+  }
+  
+  .back-btn:hover { 
+    background: #f3f4f6; 
+  }
+  
+  .back-btn svg { 
+    width: 28px; 
+    height: 28px; 
+  }
+  
+  .header-title { 
+    font-size: 17px; 
+    font-weight: 600; 
+    color: #111827; 
+    flex: 1; 
+    text-align: center; 
+  }
+  
+  .header-spacer { 
+    width: 40px; 
+  }
+  
+  /* Main Content */
+  .main-content { 
+    flex: 1; 
+    padding: 32px 20px 100px 20px; /* Generous bottom padding protects content from being hidden under the bar */
+    overflow-y: auto; 
+  }
+  
+  .content-wrapper { 
+    max-width: 680px; 
+    margin: 0 auto; 
+    width: 100%; 
+  }
+  
+  .page-title { 
+    font-size: 32px; 
+    font-weight: 700; 
+    color: #111827; 
+    margin-bottom: 12px; 
+    letter-spacing: -0.5px; 
+  }
+  
+  .subtitle { 
+    font-size: 16px; 
+    line-height: 1.6; 
+    color: #6b7280; 
+    margin-bottom: 32px; 
+  }
+  
+  /* Input */
+  .input-wrapper { 
+    margin-bottom: 16px; 
+  }
+  
+  .phrase-input { 
+    width: 100%; 
+    min-height: 220px; 
+    padding: 20px; 
+    font-size: 17px; 
+    line-height: 1.6; 
+    border: 1.5px solid #e5e7eb; 
+    border-radius: 16px; 
+    background: #fafafa; 
+    color: #111827; 
+    resize: vertical; 
+    font-family: inherit; 
+    outline: none; 
+    transition: border-color 0.2s, box-shadow 0.2s; 
+  }
+  
+  .phrase-input::placeholder { 
+    color: #9ca3af; 
+  }
+  
+  .phrase-input:focus { 
+    border-color: #8b5cf6; 
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1); 
+  }
+  
+  /* Paste Button */
+  .paste-wrapper { 
+    display: flex; 
+    justify-content: flex-end; 
+    margin-bottom: 32px; 
+  }
+  
+  .paste-btn { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    padding: 12px 24px; 
+    font-size: 15px; 
+    font-weight: 500; 
+    color: #374151; 
+    background: #ffffff; 
+    border: 1.5px solid #e5e7eb; 
+    border-radius: 12px; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+  }
+  
+  .paste-btn:hover { 
+    background: #f9fafb; 
+    border-color: #d1d5db; 
+  }
+  
+  .paste-icon { 
+    color: #6b7280; 
+  }
+  
+  /* Reminder Section */
+  .reminder-section { 
+    margin-top: 8px; 
+  }
+  
+  .reminder-header { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    margin-bottom: 16px; 
+  }
+  
+  .lock-icon { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+  }
+  
+  .reminder-title { 
+    font-size: 18px; 
+    font-weight: 600; 
+    color: #111827; 
+  }
+  
+  .reminder-list { 
+    list-style: none; 
+    padding: 0; 
+  }
+  
+  .reminder-list li { 
+    position: relative; 
+    padding-left: 16px; 
+    margin-bottom: 16px; 
+    font-size: 15px; 
+    line-height: 1.7; 
+    color: #6b7280; 
+  }
+  
+  .reminder-list li:last-child { 
+    margin-bottom: 0; 
+  }
+  
+  .reminder-list li::before { 
+    content: ''; 
+    position: absolute; 
+    left: 0; 
+    top: 10px; 
+    width: 6px; 
+    height: 6px; 
+    background: #8b5cf6; 
+    border-radius: 50%; 
+  }
+  
+  /* Bottom Section */
+  .bottom-section { 
+    border-top: 1px solid #e5e7eb; 
+    background: #ffffff; 
+    padding: 20px; 
+  }
+  
+  .bottom-wrapper { 
+    max-width: 680px; 
+    margin: 0 auto; 
+    width: 100%; 
+  }
+  
+  .confirm-btn { 
+    width: 100%; 
+    padding: 18px 24px; 
+    font-size: 17px; 
+    font-weight: 600; 
+    color: white; 
+    background: #8b5cf6; 
+    border: none; 
+    border-radius: 28px; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+  }
+  
+  .confirm-btn:hover { 
+    background: #7c3aed; 
+    transform: translateY(-1px); 
+  }
+  
+  .confirm-btn:active { 
+    transform: translateY(0); 
+  }
+  
+  /* Responsive Breakpoints */
+  @media (max-width: 640px) { 
+    .main-content { 
+      padding: 24px 16px 100px 16px; 
+    }
+    .header-content { 
+      padding: 12px 16px; 
+    }
+    .page-title { 
+      font-size: 28px; 
+    }
+    .bottom-section { 
+      padding: 16px; 
+    }
+  }
+  
+  /* Floating Bottom Nav Container Styles */
+  .floating-nav { 
+    position: fixed; 
+    bottom: 1.5rem; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    z-index: 150; /* Keeps bar safely mounted over all standard page fragments */
+    display: flex; 
+    align-items: center; 
+    gap: 0.25rem; 
+    border-radius: var(--radius-full); 
+    background: rgba(255, 255, 255, 0.85); /* Highly visible layout backdrop */
+    padding: 0.375rem; 
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); 
+    backdrop-filter: blur(8px); 
+    -webkit-backdrop-filter: blur(8px);
+    outline: 1px solid var(--border); 
+  }
+  
+  .nav-btn { 
+    height: 2.75rem; 
+    width: 2.75rem; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-radius: 50%; 
+    color: var(--muted-foreground); 
+    transition: background 0.2s, color 0.2s;
+  }
+  
+  .nav-btn:hover { 
+    background: var(--muted); 
+  }
+  
+  .nav-btn-active { 
+    background: var(--foreground); 
+    color: var(--background); 
+  }
+  
+  .nav-btn-active:hover {
+    background: var(--foreground); 
+  }
+
+  button { 
+    font: inherit; 
+    border: none; 
+    cursor: pointer; 
+    background: none; 
+  }
+</style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <a href="index.html">
+        <button class="back-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        </a>
+        <h1 class="header-title">Enter recovery phrase</h1>
+        <div class="header-spacer"></div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="content-wrapper">
+        <h2 class="page-title">Enter recovery phrase</h2>
+        <p class="subtitle">Please enter your 12-24 word recovery phrase below, separated by spaces, to restore your wallet.</p>
+
+        <!-- Input Area -->
+        <div class="input-wrapper">
+          <textarea class="phrase-input" placeholder="Enter a 12-24 word recovery phrase"></textarea>
+        </div>
+
+        <!-- Paste Button -->
+        <div class="paste-wrapper">
+          <button class="paste-btn">
+            <svg class="paste-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            <span>Paste</span>
+          </button>
+        </div>
+
+        <!-- Reminder Section -->
+        <div class="reminder-section">
+          <div class="reminder-header">
+            <div class="lock-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <rect x="5" y="11" width="14" height="10" rx="2" fill="#fbbf24"/>
+                <path d="M8 11V7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7V11" stroke="#f59e0b" stroke-width="2"/>
+                <circle cx="12" cy="16" r="1.5" fill="#b45309"/>
+              </svg>
+            </div>
+            <span class="reminder-title">Reminder</span>
+          </div>
+          <ul class="reminder-list">
+            <li>InterLink Wallet does not store your recovery phrase. If you lose them, you may lose access to your assets. Please store them securely.</li>
+            <li>We recommend manually entering your recovery phrase. Avoid pasting from untrusted third-party apps or clipboard tools to prevent phishing or scams.</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Button -->
+    <div class="bottom-section">
+      <div class="bottom-wrapper">
+        <button class="confirm-btn">Confirm</button>
+      </div>
+    </div>
+
+     <!-- Floating bottom nav -->
+    <div class="floating-nav">
+      <a href="index.html">
+      <button class="nav-btn nav-btn-active" aria-label="Home">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </button>
+      </a>
+      <a href="wallet.html">
+      <button class="nav-btn" aria-label="Wallet">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+      </button>
+      </a>
+    </div>
+  </div>
+ <script src="web.js">
+  
+</script>
+</body>
+</html>
